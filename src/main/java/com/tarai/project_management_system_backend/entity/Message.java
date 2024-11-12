@@ -1,5 +1,6 @@
 package com.tarai.project_management_system_backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,8 +22,10 @@ public class Message {
     private LocalDateTime createdAt;
 
     @ManyToOne
+    @JsonBackReference // Prevents circular reference
     private Chat chat;
 
     @ManyToOne
     private User sender;
 }
+

@@ -42,7 +42,7 @@ public class CommentController {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-    @DeleteMapping("/{issueId}")
+    @GetMapping("/{issueId}")
     public ResponseEntity<List<Comment>> getCommentByIssuedId(@PathVariable Long issueId)throws Exception{
         List<Comment> comments = commentService.findCommentByIssueId(issueId);
         return new ResponseEntity<>(comments, HttpStatus.OK);
