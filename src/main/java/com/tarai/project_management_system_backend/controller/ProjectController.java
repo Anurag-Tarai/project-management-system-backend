@@ -1,11 +1,10 @@
 package com.tarai.project_management_system_backend.controller;
 
-import com.tarai.project_management_system_backend.entity.Chat;
-import com.tarai.project_management_system_backend.entity.Message;
-import com.tarai.project_management_system_backend.entity.Project;
-import com.tarai.project_management_system_backend.entity.User;
+import com.tarai.project_management_system_backend.entity.*;
 import com.tarai.project_management_system_backend.reposritory.ProjectRepository;
+import com.tarai.project_management_system_backend.request.InvitationRequest;
 import com.tarai.project_management_system_backend.response.MessageResponse;
+import com.tarai.project_management_system_backend.service.InvitationService;
 import com.tarai.project_management_system_backend.service.ProjectService;
 import com.tarai.project_management_system_backend.service.UserService;
 import lombok.Data;
@@ -25,6 +24,9 @@ public class ProjectController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private InvitationService invitationService;
 
     @GetMapping
     public ResponseEntity<List<Project>> getProjects(@RequestParam(required = false)String category,
@@ -92,5 +94,29 @@ public class ProjectController {
             @PathVariable Long projectId) throws Exception {
         Chat chat = projectService.getChatByProjectId(projectId);
         return new ResponseEntity<>(chat, HttpStatus.OK);
+    }
+
+    // Invitation API's
+    @PostMapping("/invite")
+    public ResponseEntity<MessageResponse> inviteProject(
+            @RequestBody InvitationRequest invitationRequest,
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody Project project) throws Exception {
+            invitationService.sendInvitation(invitationRequest.getEmail(),invitationRequest.getProjectId());
+            MessageResponse response = new MessageResponse("User invitation sent...");
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @GetMapping("/accept-invitation")
+    public ResponseEntity<Invitation> acceptInvitationProject(
+            @RequestParam String token,
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody Project project) throws Exception {
+        String jwt = authHeader.substring(7);
+        // Process the token
+        User user = userService.findUserProfileByJwt(jwt);
+        Invitation invitation = invitationService.acceptInvitation(token,user.getId());
+        projectService.addUserToProject(invitation.getProjectId(), user.getId());
+        return new ResponseEntity<>(invitation,HttpStatus.OK);
     }
 }
