@@ -53,11 +53,11 @@ public class ProjectServiceImpl implements ProjectService{
                     project.getCategory().equals(category))
                     .collect(Collectors.toList());
         }
-        if(tag!=null){
+        if(tag != null){
             projects = projects.stream().filter(project ->
-                            project.getCategory().contains(tag))
-                    .collect(Collectors.toList());
+                    project.getTags().contains(tag)).collect(Collectors.toList());
         }
+
         return projects;
     }
 
@@ -95,8 +95,9 @@ public class ProjectServiceImpl implements ProjectService{
          Project project = getProjectById(projectId);
          User user = userService.findUserById(userId);
          if(!project.getTeam().contains(user)){
-             project.getTeam().add(user);
              project.getChat().getUsers().add(user);
+             project.getTeam().add(user);
+
          }
         projectRepository.save(project);
     }

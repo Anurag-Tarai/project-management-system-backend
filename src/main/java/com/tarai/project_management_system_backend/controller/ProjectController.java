@@ -100,8 +100,7 @@ public class ProjectController {
     @PostMapping("/invite")
     public ResponseEntity<MessageResponse> inviteProject(
             @RequestBody InvitationRequest invitationRequest,
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody Project project) throws Exception {
+            @RequestHeader("Authorization") String authHeader) throws Exception {
             invitationService.sendInvitation(invitationRequest.getEmail(),invitationRequest.getProjectId());
             MessageResponse response = new MessageResponse("User invitation sent...");
         return new ResponseEntity<>(response,HttpStatus.OK);
@@ -110,11 +109,11 @@ public class ProjectController {
     @GetMapping("/accept-invitation")
     public ResponseEntity<Invitation> acceptInvitationProject(
             @RequestParam String token,
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody Project project) throws Exception {
-        String jwt = authHeader.substring(7);
-        // Process the token
-        User user = userService.findUserProfileByJwt(jwt);
+            @RequestHeader("Authorization") String authHeader
+          ) throws Exception {
+        System.out.println("inside accept invite endpoint");
+
+        User user = userService.findUserProfileByJwt(authHeader.substring(7));
         Invitation invitation = invitationService.acceptInvitation(token,user.getId());
         projectService.addUserToProject(invitation.getProjectId(), user.getId());
         return new ResponseEntity<>(invitation,HttpStatus.OK);
