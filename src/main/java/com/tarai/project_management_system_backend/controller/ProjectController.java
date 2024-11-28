@@ -1,5 +1,6 @@
 package com.tarai.project_management_system_backend.controller;
 
+import com.tarai.project_management_system_backend.config.JwtUtil;
 import com.tarai.project_management_system_backend.entity.*;
 import com.tarai.project_management_system_backend.reposritory.ProjectRepository;
 import com.tarai.project_management_system_backend.request.InvitationRequest;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
+
 
     @Autowired
     private ProjectService projectService;
@@ -40,7 +42,7 @@ public class ProjectController {
     @GetMapping("/{projectId}")
     public ResponseEntity<Project> getProjectById(
             @RequestHeader("Authorization")String authHeader, @PathVariable Long projectId) throws Exception {
-        String jwt = authHeader.substring(7);
+        String jwt = JwtUtil.extractToken(authHeader);
         Project project = projectService.getProjectById(projectId);
         return new ResponseEntity<>(project, HttpStatus.OK);
     }
@@ -51,7 +53,7 @@ public class ProjectController {
             @RequestBody Project project) throws Exception {
         // Extract the token from the Authorization header
 //        String jwt = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
-        String jwt = authHeader.substring(7);
+        String jwt = JwtUtil.extractToken(authHeader);
         // Process the token
         User user = userService.findUserProfileByJwt(jwt);
         Project createdProject = projectService.createProject(project, user);
@@ -73,7 +75,7 @@ public class ProjectController {
     public ResponseEntity<MessageResponse> deleteProject(
             @RequestHeader("Authorization")String jwt,
             @PathVariable Long projectId) throws Exception {
-        User user = userService.findUserProfileByJwt(jwt.substring(7));
+        User user = userService.findUserProfileByJwt(JwtUtil.extractToken(jwt));
         projectService.deleteProject(projectId, user.getId());
         MessageResponse messageResponse = new MessageResponse();
         messageResponse.setMessage("Project Deleted successfully!");
@@ -83,7 +85,7 @@ public class ProjectController {
     @GetMapping("/search")
     public ResponseEntity<List<Project>> searchProject(@RequestParam(required = false)String keyword,
                                                      @RequestHeader("Authorization")String jwt) throws Exception {
-        User user = userService.findUserProfileByJwt(jwt.substring(7));
+        User user = userService.findUserProfileByJwt(JwtUtil.extractToken(jwt));
         List<Project> projects = projectService.searchProjects(keyword, user);
         return new ResponseEntity<>(projects, HttpStatus.OK);
     }
@@ -113,7 +115,7 @@ public class ProjectController {
           ) throws Exception {
         System.out.println("inside accept invite endpoint");
 
-        User user = userService.findUserProfileByJwt(authHeader.substring(7));
+        User user = userService.findUserProfileByJwt(JwtUtil.extractToken(authHeader));
         Invitation invitation = invitationService.acceptInvitation(token,user.getId());
         projectService.addUserToProject(invitation.getProjectId(), user.getId());
         return new ResponseEntity<>(invitation,HttpStatus.OK);
